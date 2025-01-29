@@ -4,21 +4,20 @@ import { useState } from "react";
 
 const ThemeSwitcher = () => {
   const defaultTheme =
-    (localStorage.getItem("theme") as Theme) ||
+    (localStorage?.getItem("theme") as Theme) ||
     window.matchMedia("(prefers-color-scheme: dark)").matches
       ? "dark"
       : "light";
 
-  console.log(defaultTheme);
   const [theme, setTheme] = useState<Theme>(defaultTheme);
 
   const handleToggleTheme = () => {
     if (theme === "light") {
-      localStorage.setItem("theme", "dark");
+      localStorage?.setItem("theme", "dark");
       document.documentElement.classList.add("dark");
       setTheme("dark");
     } else {
-      localStorage.setItem("theme", "light");
+      localStorage?.setItem("theme", "light");
       document.documentElement.classList.remove("dark");
       setTheme("light");
     }

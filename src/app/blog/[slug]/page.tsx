@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { CustomMDX } from "@/app/components/mdx";
 import { formatDate, getBlogPosts } from "@/app/blog/utils";
 import { baseUrl } from "@/app/sitemap";
+import { Metadata } from "next";
 
 export async function generateStaticParams() {
   const posts = getBlogPosts();
@@ -11,10 +12,15 @@ export async function generateStaticParams() {
   }));
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }) {
-  const post = getBlogPosts().find((post) => post.slug === params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const slug = (await params).slug;
+  const post = getBlogPosts().find((post) => post.slug === slug);
   if (!post) {
-    return;
+    return {};
   }
 
   const {
@@ -51,9 +57,26 @@ export function generateMetadata({ params }: { params: { slug: string } }) {
   };
 }
 
-export default function Blog({ params }: { params: { slug: string } }) {
-  const post = getBlogPosts().find((post) => post.slug === params.slug);
+const getViewsCount = async () => {
+  // if (!process.env.POSTGRES_URL) {
+  //   return [];
+  // }
 
+  return [{ slug: "vim", count: 1001 }];
+
+  // return sql`SELECT slug, count from views`;
+};
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const slug = (await params).slug;
+  const post = getBlogPosts().find((post) => post.slug === slug);
+
+  const views = await getViewsCount();
+  const count = views.find((view) => view.slug === slug)?.count || 0;
   if (!post) {
     notFound();
   }
@@ -88,6 +111,9 @@ export default function Blog({ params }: { params: { slug: string } }) {
       <div className="flex justify-between items-center mt-2 mb-8 text-sm">
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           {formatDate(post.metadata.publishedAt)}
+        </p>
+        <p className="text-sm text-neutral-600 dark:text-neutral-400">
+          {count.toLocaleString()} views
         </p>
       </div>
       <article className="prose">
