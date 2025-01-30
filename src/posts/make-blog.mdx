@@ -1,7 +1,65 @@
----
-title: "블로그 만들기"
-publishedAt: "2025-01-30"
-summary: ""
----
+export const metadata = {
+  title: "블로그를 만들며",
+  description: "블로그를 만들며 알게된 내용 정리",
+  publishedAt: "2025-01-30",
+};
 
-초안.
+드디어, 블로그를 만들었다. 첫 포스트는 가볍게 왜 블로그를 만들었는지 그리고, 만들면서 알게된 내용은 무엇인지 적어봤다.
+
+# 블로그 만들기 참~ 쉬워졌다.
+
+예전에 getsby 템플릿으로 운영한 적이 있는데, 세팅부터 쉽지 않았고
+중간에 중간에 버그가 터지며 직접 블로그를 만들어서 운영한다는게 생각보다 어렵다고 느꼈었다.
+
+그런데 이번에 next.js v15 로 블로그를 만들어보니 굉장한 발전이 있었더라.
+
+# 기술 정리
+
+## [Partial Rendering (PPR)](https://nextjs.org/learn/dashboard-app/partial-prerendering)
+
+SSR, SSG, ISR 에 대핸 내용은 알고있었는데 PPR 은 처음 접했다. next v14 에 처음 소개되었고, 꽤 최신 기술이다.
+보통 빌드 시점에 데이터가 고정되면 안되는 경우, 즉 조회할 때 마다 데이터가 바뀌는 경우 csr 이나 ssr로 처리한다.
+
+그런데, 변동이 없는 데이터는 빌드 시점에 불러와 고정시키고, 변동이 잦은 데이터는 요청이 왔을 때 서버에서 처리하려면 어떻게 해야할까?
+기존엔, SSR 와 SSG 을 둘 다 사용할 수 없어서 방법이 없었지만 next 14 이후로는 PPR 을 사용하면 된다.
+
+빌드 시점에 정적으로 만들 영역을 쉘(shell) 이라고 하며, 동적으로 만들어지는 영역을 홀(hole) 이라 한다.
+서버의 성능 부하 및 유저의 리소스 로드 개선에 큰 도움이 될 것 같다.
+
+## [Route Groups](https://nextjs.org/docs/app/building-your-application/routing/route-groups)
+
+route 경로에 () 를 추가하면 URL 에 해당 경로를 제외시키고, 하위 경로를 묶어 공통 코드(layout.js, loading.js)를 함께 관리할 수 있다.
+next 13 부터 사용할 수 있는 기능이라 출시된지 꽤 되었는데, 아직 회사에서 page route 를 주로 사용하다보니 기본적인 기능도 익숙치 않다.
+
+올해 이 블로그에서 앱 라우트를 적용해보고 차차 업무에 도입해보자.
+
+## [Route Handlers](https://nextjs.org/docs/app/building-your-application/routing/route-handlers)
+
+기존엔 api 폴더 내에서만 메서드를 작성했다면, 이제는 어디서든 route.ts 파일을 만들어 API 를 정의할 수 있다.
+문서를 보면 route 와 관련된 내용이 많은데, cache 여부, revalidate 시간, 그리고 page 와 공존할 수 없는 규칙, non-ui 라우트(sitemap, rss 등), streaming(LLM 모델과 연동할 때 자주 사용한다고 한다.)
+등이 있다. 쭉 읽어보았는데 이 포스트에 모두 정리하기엔 무리가 있어 보이고, 관심있는 기능이 꽤 있는데 나중에 사용하게 되면 다시 정리해봐야겠다.
+
+## mdx 다루기
+
+Guillermo Rauch, Lee Robinson 의 블로그를 어떻게 구현했는지 확인해보면 @next/mdx 를 사용하고 하나는 next-mdx-remote 를 사용하고있다.
+
+@next/mdx 를 사용하면 mdx 파일을 리액트 컴포넌트처럼 사용할 수 있다. 설정도 쉽고 문서도 잘 정리되어있다.
+
+```js
+module.exports = withMDX({
+  pageExtensions: [..., "md", "mdx"],
+});
+```
+
+이 방법을 사용하려 했는데, frontmatter(mdx 에서는 보통 메타 정보) 를 처리하려면 또 다른 라이브러리를 엮어야 하고, list 페이지나 메타 데이터에서 이를 사용하려면 별도로 처리해 주어야 했다.
+우선 Lee Robinson 의 블로그를 참고해서 mdx 를 fs 으로 관리하도록 처리했으나 추후 @next/mdx 로 마이그레이션 해보면 좋을 것 같다.
+
+개인 블로그를 만들기 쉬워졌다는 점에서 mdx에 대해 작성해보려 했는데, 꽤 글이 길어질 것 같다. 다음 기회에.
+
+# 블로그를 만든 이유
+
+1. 개인 블로그를 통해 유저 데이터를 분석하고 서비스에 도움을 줄 수 있는 역량을 쌓기 위해
+2. 사용해 보고 싶은 기술이나 만들어보고 싶은 기능을 바로바로 적용해보고 블로그에 정리해보기 위해
+3. 단순히 관심 있는 분야에 대해(기술, 제테크, 취미, 맛집 등) 정리하고 공유하기 위해
+
+**요약하면 내 삶을 기록하고 공유하기 위해 만들었다 :)**
