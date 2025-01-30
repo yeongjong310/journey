@@ -66,13 +66,15 @@ export default async function Page({
   const slug = (await params).slug;
   const post = getBlogPosts().find((post) => post.slug === slug);
 
-  await incrementViewCount({ slug });
-
-  const { count } = await getViewCount({ slug });
-
   if (!post) {
     notFound();
   }
+
+  if (process.env.NODE_ENV === "production") {
+    await incrementViewCount({ slug });
+  }
+
+  const { count } = await getViewCount({ slug });
 
   return (
     <section>
