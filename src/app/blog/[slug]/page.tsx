@@ -75,6 +75,7 @@ export default async function Page({
   }
 
   const { count } = await getViewCount({ slug });
+  const countWithFallback = count || 1;
 
   return (
     <section>
@@ -108,7 +109,7 @@ export default async function Page({
           {formatDate(post.metadata.publishedAt)}
         </p>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
-          {count.toLocaleString()} views
+          {countWithFallback.toLocaleString()} views
         </p>
       </div>
       <article className="prose">

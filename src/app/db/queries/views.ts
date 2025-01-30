@@ -18,13 +18,14 @@ export const getViewCount = async ({ slug }: { slug: string }) => {
 
   if (error) {
     console.error("select error", error);
+
     return {
       count: null,
     };
   }
 
   return {
-    count: data.count || 1,
+    count: data.count,
   };
 };
 
