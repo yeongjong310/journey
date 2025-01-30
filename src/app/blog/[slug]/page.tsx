@@ -3,6 +3,7 @@ import { CustomMDX } from "@/app/components/mdx";
 import { formatDate, getBlogPosts } from "@/app/blog/utils";
 import { baseUrl } from "@/app/sitemap";
 import { Metadata } from "next";
+import { getViewCount, incrementViewCount } from "@/app/db/queries/views";
 
 export async function generateStaticParams() {
   const posts = getBlogPosts();
@@ -57,16 +58,6 @@ export async function generateMetadata({
   };
 }
 
-const getViewsCount = async () => {
-  // if (!process.env.POSTGRES_URL) {
-  //   return [];
-  // }
-
-  return [{ slug: "vim", count: 1001 }];
-
-  // return sql`SELECT slug, count from views`;
-};
-
 export default async function Page({
   params,
 }: {
@@ -75,8 +66,10 @@ export default async function Page({
   const slug = (await params).slug;
   const post = getBlogPosts().find((post) => post.slug === slug);
 
-  const views = await getViewsCount();
-  const count = views.find((view) => view.slug === slug)?.count || 0;
+  await incrementViewCount({ slug });
+
+  const { count } = await getViewCount({ slug });
+
   if (!post) {
     notFound();
   }
