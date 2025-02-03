@@ -5,22 +5,21 @@ import { GeistMono } from "geist/font/mono";
 import { Navbar } from "./components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import Footer from "./components/footer";
 import { baseUrl } from "./sitemap";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "Next.js Portfolio Starter",
-    template: "%s | Next.js Portfolio Starter",
+    default: "Tory's Journey",
+    template: "%s | Tory's Journey",
   },
-  description: "This is my portfolio.",
+  description: "This is Tory's Journey.",
   openGraph: {
-    title: "My Portfolio",
-    description: "This is my portfolio.",
+    title: "Tory's Journey",
+    description: "This is Tory's Journey.",
     url: baseUrl,
-    siteName: "My Portfolio",
-    locale: "en_US",
+    siteName: "Tory's Journey",
+    locale: "ko_KR",
     type: "website",
   },
   robots: {
@@ -45,7 +44,7 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="ko"
       className={cx(
         "text-black bg-white dark:text-white dark:bg-black",
         GeistSans.variable,
