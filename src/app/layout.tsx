@@ -37,6 +37,7 @@ export const metadata: Metadata = {
 
 const cx = (...classes: string[]) => classes.filter(Boolean).join(" ");
 
+// todo: class 에 dark 에 있으면 자동으로 다크모드로 변경되는데, html 에 표함되지 않음.
 export default function RootLayout({
   children,
 }: {
@@ -51,8 +52,8 @@ export default function RootLayout({
         GeistMono.variable
       )}
     >
-      <body className="antialiased max-w-xl mx-4 mt-8 lg:mx-auto">
-        <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0">
+      <body className="antialiased max-w-xl mt-8 mx-auto px-2">
+        <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0 h-[95vh]">
           <Navbar />
           {children}
           <Analytics />
