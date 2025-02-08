@@ -1,6 +1,6 @@
 import Link from "next/link";
 import ThemeSwitcher from "./themeSwitcher";
-import { hasWindow } from "../utils/browser";
+import { ClientSideOnly } from "./browser/ClientSideOnly";
 
 const navItems = {
   "/": {
@@ -33,7 +33,9 @@ export function Navbar() {
             })}
           </div>
         </nav>
-        {hasWindow && <ThemeSwitcher />}
+        <ClientSideOnly>
+          <ThemeSwitcher />
+        </ClientSideOnly>
       </div>
     </aside>
   );
