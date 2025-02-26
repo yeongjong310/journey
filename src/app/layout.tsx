@@ -1,3 +1,5 @@
+/** @format */
+
 import "./global.css";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
@@ -6,6 +8,7 @@ import { Navbar } from "./components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { baseUrl } from "./sitemap";
+import { ErrorResetBoundary } from "./components/error/ErrorBoundary";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -55,7 +58,7 @@ export default function RootLayout({
       <body className="antialiased max-w-xl mt-8 mx-auto px-2">
         <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0 h-[95vh]">
           <Navbar />
-          {children}
+          <ErrorResetBoundary>{children}</ErrorResetBoundary>
           <Analytics />
           <SpeedInsights />
         </main>
