@@ -55,7 +55,7 @@ export default function RootLayout({
         GeistMono.variable
       )}
     >
-      <body className="antialiased max-w-xl mt-8 mx-auto px-2">
+      <body className="antialiased max-w-3xl mt-8 mx-auto px-2">
         <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0 h-[95vh]">
           <Navbar />
           <ErrorResetBoundary>{children}</ErrorResetBoundary>
