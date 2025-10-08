@@ -1,0 +1,113 @@
+---
+title: "Console.log 말고 서버 디버깅은 어떻게 해야할까?"
+publishedAt: "2025-01-08"
+summary: "Next.js 서버 사이드 코드를 효과적으로 디버깅하는 방법: Node.js Inspector와 VS Code 활용법"
+---
+
+# 효율적인 Next.js 서버 디버깅 
+
+Next.js 개발 시 서버 사이드 코드를 디버깅하는 것은 클라이언트 사이드보다 까다롭습니다. 
+특히 `_document`, `_app`, `getServerSideProps`와 같은 서버 전용 코드의 실행 흐름과 데이터를 추적하기 어렵죠.
+
+## 터미널 디버깅의 불편함 : Console.log 의 한계
+
+서버 사이드 디버깅을 console.log 로만 하면 다음과 같은 문제들이 있습니다
+
+```typescript
+// _document.tsx
+static async getInitialProps(ctx: DocumentContext) {
+  console.log('ctx:', ctx);  // 거대한 객체가 터미널에 출력됨
+}
+```
+
+### 주요 문제점
+
+1. **조건부 디버깅 어려움**: 특정 조건에서만 로그를 보려면 코드 수정 필요
+2. **가독성 부족**: 브라우저 DevTools 처럼 객체를 접었다 펼 수 없고, 복잡한 객체 구조를 한눈에 파악하기 어려움
+3. **최대 출력 제한**: 수백 줄이 한번에 출력되는 경우, 긴 로그는 상단이 잘림
+3. **실시간 조작 불가**: 중단점에서 변수 값을 실시간으로 확인/수정 불가
+
+console.log 를 여기 저기 반복하며 출력하다가, 결국 지쳐 쓰러지게 되죠.
+
+## 더 나은 방법을 찾아보자
+### 방법 1: NODE_OPTIONS와 Chrome DevTools
+
+#### 설정 (easy)
+
+```json
+// package.json
+{
+  "scripts": {
+    "dev:debug": "NODE_OPTIONS='--inspect' next dev"
+  }
+}
+```
+
+#### 사용하기
+
+1. 디버그 모드로 서버 실행
+2. Chrome에서 `chrome://inspect` 접속
+3. Remote Target 섹션에서 `inspect` 링크 클릭
+4. DevTools에서 소스 파일 찾아 중단점 설정
+
+#### 문제
+
+- **Remote Target이 목록에 안 보이는 경우가 있음**
+- **Source Map 설정이 없으면 컴파일된 코드만 보임** (.pnpm, node_modules 경로)
+- **파일 찾기가 직관적이지 않음**
+
+### 방법 2: IDE 를 활용한 디버깅 (vs-code, cursor 에서 사용가능)
+
+#### Run and Debug 탭 활용하기
+
+1. 디버그 구성 추가 
+.vscode/launch.json 에 디버깅이 필요한 환경 설정을 추가한다.
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Next.js Server",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_OPTIONS": "--inspect"
+      },
+      "console": "integratedTerminal"
+    }
+  ]
+}
+```
+
+#### 사용법
+브라우저 Sources 탭에서 사용하는 중단점 적용 및 실행 방식과 비슷하다.
+
+1. 코드에 중단점 설정 (줄 번호 클릭) 
+2. F5로 디버깅 시작 
+3. 중단점에서 변수 확인, Watch 표현식 추가
+4. Debug Console에서 실시간 코드 실행
+
+<Image src="/image/run-and-debug.png" width="560" height="500"/>
+
+## 활용 예시: Next.js 실행 순서 분석
+
+Next.js의 서버 사이드 렌더링 과정에서, getServerSideProps, _document, _app 등 실행 순서를 확인해보았다.
+
+1. `getServerSideProps` - 페이지 데이터 페칭
+2. `_app` - pageProps를 받아 페이지 컴포넌트 래핑
+3. `_document.getInitialProps` - HTML 문서 설정 (pageProps 전달 X)
+4. `_document.render` - 최종 HTML 생성
+
+### 결과
+
+- **getServerSideProps → _app**: pageProps로 데이터 전달
+- **_app → Page**: props 그대로 전달
+- **_document**: pageProps 접근 불가, HTML 구조만 담당
+- **실행 환경**: 모두 서버에서만 실행 (getServerSideProps, _document)
+
+
+너무 편하다. 만족!
