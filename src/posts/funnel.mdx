@@ -1,0 +1,118 @@
+---
+title: "toss/use-funnel 은 어떤 문제를 풀고자 했을까?"
+publishedAt: "2025-10-16"
+summary: "3가지 funnel 에 대한 개인 견해"
+---
+
+폼에서 가장 중요한 기능은 유저에게 데이터를 입력받는 것입니다.
+그러면 멀티 스탭 폼은 일반 폼과 무엇이 다들지 궁금했습니다. 단어 그래도 스탭이 달랐는데, 스탭이 추가되면서 입력 데이터 관리 복잡도가 증가합니다.
+특징은, 각 스텝마다 데이터는 군집을 이루고 군집에 순서가 정해집니다.
+
+이 문제를 해결하는 가장 흔한 방법을 먼저 소개하겠습니다.
+
+# 흔한 Funnel 
+
+전역 상태를 활용하여 데이터를 저장하고 퍼널 순서를 자유롭게 결정한다. 
+```tsx
+const FirstStep = ({ isOpened, onNext }) => {
+    ...
+    return (
+        ...
+        <input name="id" onClick={(name) => setTitle(name)}/>
+        <input name="password" onClick={(password) => setTitle(password)}/>
+        <Button onClick={() => { 
+            ...
+            onNext()
+        }}>
+    )
+}
+
+const FinalStep = ({ isOpened, onComplete }) => {
+    ...
+    return (
+        ...
+        <input name="phone" onClick={(phone) => setPassword(phone)}/>
+        <Button onClick={() => { 
+            ...
+            mutate({ id, password, phone }, {
+                onSuccess: {
+                    onComplete() // 퍼널 닫기
+                }
+            }); // POST 전송   
+        }}>
+    )
+}
+```
+
+퍼널 상태 관리를 부모 컴포넌트에서 담당하고, 각 스텝은 다음 순서의 스텝을 열기 위한 콜백 함수를 주입 받습니다.
+
+```tsx
+const [isFirstStepOpened, setIsFirstStepOpened] = useState(false);
+const [isFinalStepOpened, setIsFinalStepOpened] = useState(false);
+
+
+return <>
+    <FirstStep isOpened={isFirstStepOpened} onNext={() => { 
+        setIsFirstStepOpened(false);
+        setIsFinalStepOpened(true);
+    }}/>
+    <FinalStep isOpened={isFinalStepOpened} onComplete={() => setIsFinalStepOpened(false)}/>
+</>
+
+```
+
+코드 작성에 큰 어려움은 없습니다. 그리고 어떤 순서로 열고 닫히는지 눈에 잘 보이죠.
+그런데 만약 스텝이 2개가 아닌 5개 혹은 그 이상으로 많아지면 어떨까요? 스텝을 열고 닫는 것도 관리 대상이 됩니다.
+
+# Stepper
+Stepper는 스텝 전환에 필요한 로직을 추상화하여 단순화합니다. Stepper 를 구현하는 다양한 방식이 있지만 핵심은 스텝을 순서대로 명시할 수 있어야하고 Stepper 는 입력받은 순서를 그대로 호출하는 원리이죠. 
+예시처럼 Step 컴포넌트를 순서대로 호출할 수도 있고, 배열을 통해 인터페이스로 주입하기도 합니다.
+
+```tsx
+  const [active, setActive] = useState(1);
+  const nextStep = () => setActive((current) => (current < 3 ? current + 1 : current));
+  const prevStep = () => setActive((current) => (current > 0 ? current - 1 : current));
+
+  return (
+    <>
+      <Stepper active={active} onStepClick={setActive} breakpoint="sm">
+        <Stepper.Step label="First step" description="Create an account">
+          <FirstStep onNext={nextStep} onPrev={prevStep}/>
+        </Stepper.Step>
+        <Stepper.Step label="Second step" description="Verify email">
+          <SecondStep onNext={nextStep} onPrev={prevStep}/>
+        </Stepper.Step>
+        <Stepper.Step label="Final step" description="Get full access">
+          <ThirdStep onNext={nextStep}/>
+        </Stepper.Step>
+        <Stepper.Completed>
+          <FinialStep />
+        </Stepper.Completed>
+      </Stepper>
+    </>
+  );
+```
+
+스텝 순서를 결정하는 책임이 Stepper 로 이동되었기 때문에, 이제 각 스텝이 다음 순서에서 어떤 스텝을 호출해야할지 신경쓰지 않고 nextStep 혹은 prevStep 만 호출하면 됩니다.
+그런데, 만약 스텝 순서가 동적으로 변경된다면 어떻게 해야할까요? Stepper 로 이 문제를 풀 수 있을까요? 할 수 있겠지만 더 많은 고민을 필요로 합니다.
+만약 SecondStep 다음에 ThirdStep1 혹은 ThirdStep2 가 호출되어야 한다면, 결국 SecondStep 이 다음 스텝의 순서를 알고있어야 합니다. ThirdStep 내부적으로 두 가지중 하나를 실행하던가, Stepper 에 입력되는 순서를 동적으로 변경해야 합니다.
+Stepper 는 순서를 신경쓰지 않도록 추상화한 것이 장점인데, 이 장점을 활용하지 못하고 결국 순서를 신경쓰게 만들죠.
+
+```
+// [FirstStep, SecondStep, ThirdStep1 or ThirdStep2, FinalStep] <- 동적 결정 로직이 추가되어야 한다.
+```
+
+한 가지 조건을 더 추가해보겠습니다. 만약 SecondStep 이후에 ThirdStep 이 오고 그 다음 ForthStep 이 온다면, 즉 4단계 스텝에서 5단계 스텝으로 변경되면 어떻게 처리해야할까요? 스텝을 동적으로 변경해주는 로직이 좀 더 복잡해 질 것으로 예상됩니다.
+SecondStep 에 위치한 상황에서 FirstStep 을 실수로 제거해버리면 강제로 다음 스텝으로 넘어갈 수 있기 때문에 의도치 않게 Step 을 점프할 수 도 있죠. 
+
+Stepper 는 **'입력받은 스텝을 순서대로 호출한다'** 이 개념을 추상화했기 때문에 순서대로 호출되지 않는 동적 멀티 스텝에는 어울리지 않는 것 같습니다.
+
+```
+// [FirstStep, SecondStep, FinalStep] or 
+// [FirstStep, SecondStep, ThirdStep, ForthStep, FinalStep]
+```
+
+# useFunnel - 무엇을 해결했을까?
+순서와 상태 변경을 응집한다.
+
+
