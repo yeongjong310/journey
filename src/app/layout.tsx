@@ -1,9 +1,11 @@
 /** @format */
 
 import "./global.css";
+import "@mantine/core/styles.css";
 import type { Metadata } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import { ColorSchemeScript, MantineProvider } from "@mantine/core";
 import { Navbar } from "./components/nav";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -55,13 +57,18 @@ export default function RootLayout({
         GeistMono.variable
       )}
     >
+      <head>
+        <ColorSchemeScript defaultColorScheme="auto" />
+      </head>
       <body className="antialiased max-w-3xl mt-8 mx-auto px-2">
-        <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0 h-[95vh]">
-          <Navbar />
-          <ErrorResetBoundary>{children}</ErrorResetBoundary>
-          <Analytics />
-          <SpeedInsights />
-        </main>
+        <MantineProvider defaultColorScheme="auto">
+          <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0 h-[95vh]">
+            <Navbar />
+            <ErrorResetBoundary>{children}</ErrorResetBoundary>
+            <Analytics />
+            <SpeedInsights />
+          </main>
+        </MantineProvider>
       </body>
     </html>
   );
