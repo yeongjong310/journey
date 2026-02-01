@@ -1,7 +1,15 @@
 "use client";
 
-import { hasWindow } from "@/app/utils/browser";
+import { useEffect, useState } from "react";
 
 export function ClientSideOnly({ children }: { children: React.ReactNode }) {
-  return hasWindow() ? children : null;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
+  return <>{children}</>;
 }
