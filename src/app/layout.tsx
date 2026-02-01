@@ -60,9 +60,9 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
-      <body className="antialiased max-w-3xl mt-8 mx-auto px-2">
+      <body className="antialiased">
         <MantineProvider defaultColorScheme="auto">
-          <main className="flex-auto min-w-0 mt-6 flex flex-col px-2 md:px-0 h-[95vh]">
+          <main className="flex-auto min-w-0 mt-6 flex flex-col h-[95vh] max-w-7xl mx-auto px-4 md:px-6">
             <Navbar />
             <ErrorResetBoundary>{children}</ErrorResetBoundary>
             <Analytics />

@@ -1,4 +1,5 @@
 import { BlogPosts } from "@/app/components/posts";
+import { Title, Space } from "@mantine/core";
 
 export const metadata = {
   title: "Blog",
@@ -8,8 +9,11 @@ export const metadata = {
 export default function Page() {
   return (
     <section>
-      <h1 className="font-semibold text-2xl mb-8 tracking-tighter">My Blog</h1>
+      <Title order={1} mb="xl">
+        My Blog
+      </Title>
       <BlogPosts />
+      <Space h="xl" />
     </section>
   );
 }
