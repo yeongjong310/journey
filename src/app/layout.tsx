@@ -67,7 +67,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <MantineProvider theme={theme} defaultColorScheme="auto">
-          <main className="flex-auto min-w-0 mt-6 flex flex-col h-[95vh] max-w-7xl mx-auto px-4 md:px-6">
+          <main className="flex-auto min-w-0 mt-6 flex flex-col max-w-4xl mx-auto px-4 md:px-6">
             <Navbar />
             <ErrorResetBoundary>{children}</ErrorResetBoundary>
             <Analytics />

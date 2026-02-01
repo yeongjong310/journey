@@ -109,11 +109,15 @@ html {
 }
 
 .prose ul {
-  @apply list-disc pl-6;
+  @apply list-disc pl-6 my-4;
 }
 
 .prose ol {
-  @apply list-decimal pl-6;
+  @apply list-decimal pl-6 my-4;
+}
+
+.prose li {
+  @apply my-2;
 }
 
 .prose > :first-child {
@@ -151,7 +155,7 @@ input[type="email"] {
 }
 
 .prose th {
-  @apply px-4 py-3 text-left font-medium text-neutral-900 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-800;
+  @apply px-4 py-3 text-left font-semibold text-neutral-900 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-700;
 }
 
 .prose td {

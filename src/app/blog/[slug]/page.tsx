@@ -78,7 +78,7 @@ export default async function Page({
   const countWithFallback = count || 1;
 
   return (
-    <section>
+    <section className="mb-8">
       <script
         type="application/ld+json"
         suppressHydrationWarning
