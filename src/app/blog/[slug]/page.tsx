@@ -6,7 +6,8 @@ import { Metadata } from "next";
 import { getViewCount, incrementViewCount } from "@/app/db/queries/views";
 
 export async function generateStaticParams() {
-  const posts = getBlogPosts();
+  // production 빌드 시 hidden 포스트는 제외
+  const posts = getBlogPosts(false);
 
   return posts.map((post) => ({
     slug: post.slug,
@@ -19,7 +20,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const slug = (await params).slug;
-  const post = getBlogPosts().find((post) => post.slug === slug);
+  // metadata 생성 시에는 모든 포스트 포함 (development에서 접근 가능하도록)
+  const post = getBlogPosts(true).find((post) => post.slug === slug);
   if (!post) {
     return {};
   }
@@ -64,9 +66,16 @@ export default async function Page({
   params: Promise<{ slug: string }>;
 }) {
   const slug = (await params).slug;
-  const post = getBlogPosts().find((post) => post.slug === slug);
+  // development에서는 hidden 포스트도 볼 수 있도록
+  const includeHidden = process.env.NODE_ENV === "development";
+  const post = getBlogPosts(includeHidden).find((post) => post.slug === slug);
 
   if (!post) {
+    notFound();
+  }
+
+  // production에서 hidden 포스트 접근 시 404
+  if (process.env.NODE_ENV === "production" && post.metadata.hidden) {
     notFound();
   }
 
@@ -79,6 +88,13 @@ export default async function Page({
 
   return (
     <section className="mb-8">
+      {post.metadata.hidden && process.env.NODE_ENV === "development" && (
+        <div className="mb-6 p-4 rounded-md bg-orange-100 dark:bg-orange-900 border border-orange-300 dark:border-orange-700">
+          <p className="text-orange-800 dark:text-orange-200 text-sm font-medium">
+            ⚠️ This post is hidden and will not be visible in production.
+          </p>
+        </div>
+      )}
       <script
         type="application/ld+json"
         suppressHydrationWarning

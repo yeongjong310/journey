@@ -1,0 +1,37 @@
+---
+title: "Hidden Test Post"
+publishedAt: "2026-02-08"
+summary: "이 포스트는 hidden으로 설정되어 production에서는 보이지 않습니다."
+hidden: true
+---
+
+# Hidden 포스트 테스트
+
+이 포스트는 `hidden: true`로 설정되어 있어서:
+
+- **Development 환경**: 목록과 상세 페이지에서 볼 수 있습니다
+- **Production 환경**: 목록에서 숨겨지고, 직접 URL로 접근해도 404가 표시됩니다
+
+## Hidden 기능 활용
+
+이 기능은 다음과 같은 경우에 유용합니다:
+
+1. **작성 중인 포스트**: 아직 완성되지 않은 초안
+2. **개인 메모**: 공개하고 싶지 않은 개인적인 내용
+3. **테스트 포스트**: 기능 테스트용 포스트
+4. **시즌 컨텐츠**: 특정 시기에만 공개하고 싶은 내용
+
+## 설정 방법
+
+MDX 파일의 frontmatter에 `hidden: true`를 추가하면 됩니다:
+
+```yaml
+---
+title: "제목"
+publishedAt: "2024-01-01"
+summary: "요약"
+hidden: true
+---
+```
+
+Hidden 설정을 해제하려면 `hidden: false`로 변경하거나 해당 줄을 삭제하면 됩니다.

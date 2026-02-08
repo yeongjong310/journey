@@ -2,7 +2,8 @@ import { baseUrl } from "@/app/sitemap";
 import { getBlogPosts } from "@/app/blog/utils";
 
 export async function GET() {
-  const allBlogs = await getBlogPosts();
+  // RSS 피드에서는 hidden 포스트 제외
+  const allBlogs = await getBlogPosts(false);
 
   const itemsXml = allBlogs
     .sort((a, b) => {

@@ -6,6 +6,7 @@ type Metadata = {
   publishedAt: string;
   summary: string;
   image?: string;
+  hidden?: boolean;
 };
 
 function parseFrontmatter(fileContent: string) {
@@ -66,8 +67,16 @@ function getMDXData(dir: string) {
   });
 }
 
-export function getBlogPosts() {
-  return getMDXData(path.join(process.cwd(), "src", "posts"));
+export function getBlogPosts(includeHidden = false) {
+  const posts = getMDXData(path.join(process.cwd(), "src", "posts"));
+
+  // development 환경에서는 includeHidden 옵션에 따라 필터링
+  // production 환경에서는 항상 hidden 포스트 제외
+  if (process.env.NODE_ENV === "production" || !includeHidden) {
+    return posts.filter(post => !post.metadata.hidden);
+  }
+
+  return posts;
 }
 
 export function formatDate(date: string, includeRelative = false) {
