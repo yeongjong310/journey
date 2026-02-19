@@ -11,6 +11,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { baseUrl } from "./sitemap";
 import { ErrorResetBoundary } from "./components/error/ErrorBoundary";
+import { LocatorSetup } from "./components/LocatorSetup";
 
 const theme = createTheme({
   fontFamily: `${GeistSans.style.fontFamily}, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif`,
@@ -66,6 +67,7 @@ export default function RootLayout({
         <ColorSchemeScript defaultColorScheme="auto" />
       </head>
       <body className="antialiased">
+        <LocatorSetup />
         <MantineProvider theme={theme} defaultColorScheme="auto">
           <main className="flex-auto min-w-0 mt-6 flex flex-col max-w-4xl mx-auto px-4 md:px-6">
             <Navbar />

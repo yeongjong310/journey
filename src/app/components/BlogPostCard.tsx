@@ -20,7 +20,7 @@ export function BlogPostCard({ title, summary, date, isHidden }: BlogPostCardPro
         height: "100%",
         cursor: "pointer",
         opacity: isHidden ? 0.6 : 1,
-        border: isHidden ? "2px dashed #868e96" : undefined
+        border: isHidden ? "2px dashed #868e96" : undefined,
       }}
     >
       <Stack gap="md">

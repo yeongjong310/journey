@@ -23,6 +23,7 @@ export function BlogPosts() {
           <Link
             key={post.slug}
             href={`/blog/${post.slug}`}
+            draggable={false}
             style={{ textDecoration: "none" }}
           >
             <BlogPostCard
