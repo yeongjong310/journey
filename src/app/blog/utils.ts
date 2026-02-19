@@ -15,16 +15,22 @@ function parseFrontmatter(fileContent: string) {
   const frontMatterBlock = match![1];
   const content = fileContent.replace(frontmatterRegex, "").trim();
   const frontMatterLines = frontMatterBlock.trim().split("\n");
-  const metadata: Partial<Metadata> = {};
-
-  frontMatterLines.forEach((line) => {
+  const raw = frontMatterLines.reduce<Record<string, string>>((acc, line) => {
     const [key, ...valueArr] = line.split(": ");
-    let value = valueArr.join(": ").trim();
-    value = value.replace(/^['"](.*)['"]$/, "$1"); // Remove quotes
-    metadata[key.trim() as keyof Metadata] = value;
-  });
+    const value = valueArr.join(": ").trim().replace(/^['"](.*)['"]$/, "$1");
+    acc[key.trim()] = value;
+    return acc;
+  }, {});
 
-  return { metadata: metadata as Metadata, content };
+  const metadata: Metadata = {
+    title: raw.title,
+    publishedAt: raw.publishedAt,
+    summary: raw.summary,
+    image: raw.image,
+    hidden: raw.hidden === "true",
+  };
+
+  return { metadata, content };
 }
 
 function getMDXFiles(dir: string): string[] {
