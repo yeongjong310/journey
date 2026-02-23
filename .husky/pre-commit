@@ -1,0 +1,12 @@
+ALLOWED_NAME="김영종"
+ALLOWED_EMAIL="yjk.dev@gmail.com"
+
+NAME=$(git config user.name)
+EMAIL=$(git config user.email)
+
+if [ "$NAME" != "$ALLOWED_NAME" ] || [ "$EMAIL" != "$ALLOWED_EMAIL" ]; then
+  echo "❌ 커밋이 차단되었습니다."
+  echo "   허용된 계정: $ALLOWED_NAME <$ALLOWED_EMAIL>"
+  echo "   현재 계정:   $NAME <$EMAIL>"
+  exit 1
+fi
