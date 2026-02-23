@@ -1,5 +1,5 @@
 ALLOWED_NAME="김영종"
-ALLOWED_EMAIL="yjk.dev@gmail.com"
+ALLOWED_EMAIL="tohero21@naver.com"
 
 NAME=$(git config user.name)
 EMAIL=$(git config user.email)
