@@ -1,0 +1,36 @@
+---
+title: "Linkerd fail-fast로 인한 503 Service Unavailable 트러블슈팅"
+publishedAt: "2026-04-01"
+summary: "Linkerd 서비스 메시의 fail-fast 메커니즘이 503을 반환하는 원인과 대응 방법"
+---
+
+## 발생 상황
+
+- **API:** `GET /client/api/v1/course/339923?lang=ko` (course-api.devinflearn.com)
+- **발생 시간:** 2026-03-31 08:14:16 GMT
+
+## 원인
+
+Linkerd 서비스 메시의 **fail-fast** 메커니즘이 작동하여 503을 반환했다.
+
+근거가 된 응답 헤더:
+
+- `l5d-proxy-error: service in fail-fast` → 백엔드 Pod이 요청을 받을 수 없는 상태
+- `l5d-proxy-connection: close` → 연결 즉시 종료
+- `content-length: 0` → 애플리케이션 응답이 아닌 프록시 레벨 차단
+
+## 요청 경로
+
+```
+클라이언트 (localhost:3000) → CloudFront → Linkerd 프록시 (여기서 차단 ❌) → course-api (도달 못함)
+```
+
+## 판단
+
+서버 응답 16ms로 매우 빨랐고, Linkerd가 즉시 차단한 것이므로 **일시적 이슈일 가능성이 높다**. Pod 재시작, 배포 중 롤링 업데이트, 순간적 리소스 초과 등이 원인일 수 있다.
+
+## 대응
+
+- 재요청 시 200이 오면 일시적 이슈로 판단
+- 반복 발생 시 인프라 팀에 Pod 상태 및 Linkerd 대시보드 확인 요청
+- 클라이언트 코드에 503 대상 재시도 로직(exponential backoff) 적용 권장

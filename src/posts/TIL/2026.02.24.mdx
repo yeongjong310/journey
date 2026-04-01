@@ -1,0 +1,181 @@
+---
+title: "CSS contain: 'content'"
+publishedAt: "2026-02-24"
+summary: "CSS contain: content 속성 정리"
+---
+
+## contain 속성이란
+
+`contain`은 브라우저에게 **"이 요소 내부의 변화가 외부에 영향을 주지 않는다"**고 알려주는 최적화 힌트다.
+
+기본적으로 브라우저는 DOM 어딘가가 바뀌면 페이지 전체를 대상으로 레이아웃(reflow)과 페인트(repaint)를 다시 계산한다. `contain`을 사용하면 이 계산 범위를 해당 요소 안쪽으로 제한할 수 있다.
+
+| 값 | 의미 |
+| --- | --- |
+| `layout` | 내부 레이아웃 변경이 외부 레이아웃에 영향을 주지 않음 |
+| `paint` | 요소 경계 밖으로 콘텐츠가 그려지지 않음 |
+| `size` | 요소의 크기가 자식에 의존하지 않음 (명시적 크기 필요) |
+| `style` | CSS 카운터·quotes 등의 영향 범위를 제한 |
+| `content` | `layout` + `paint`의 축약 |
+| `strict` | `layout` + `paint` + `size`의 축약 |
+
+## contain: content
+
+`contain: content`는 `contain: layout paint`의 축약이다.
+
+- **layout containment** — 요소 내부의 레이아웃 변경이 외부로 전파되지 않는다. 새로운 formatting context를 생성한다.
+- **paint containment** — 요소의 경계 밖으로 콘텐츠가 페인트되지 않는다. `overflow: hidden`과 비슷한 시각적 효과를 가진다.
+
+```css
+.card {
+  contain: content;
+}
+```
+
+## 사용 예시
+
+독립적인 위젯이 반복되는 구조에 적합하다.
+
+```css
+/* 카드 리스트 */
+.card {
+  contain: content;
+}
+
+/* 댓글 목록 */
+.comment {
+  contain: content;
+}
+
+/* 대시보드 패널 */
+.dashboard-panel {
+  contain: content;
+}
+```
+
+### 주의할 점
+
+paint containment가 포함되어 있으므로 자식이 부모 경계 밖으로 넘쳐야 하는 경우(툴팁, 드롭다운 등) 잘려 보일 수 있다.
+
+```css
+/* 드롭다운이 있는 요소에는 사용하지 않는다 */
+.dropdown-wrapper {
+  /* contain: content; ← 드롭다운 메뉴가 잘림 */
+}
+```
+
+## 성능 효과
+
+`contain: content`를 적용하면 브라우저가 해당 요소의 내부 변화를 독립적으로 처리할 수 있어 reflow·repaint 비용이 줄어든다.
+
+효과가 큰 경우:
+- **리스트 아이템이 수백 개 이상** — 한 아이템의 변화가 나머지 아이템의 레이아웃 재계산을 유발하지 않음
+- **오프스크린 콘텐츠가 많은 페이지** — 화면 밖 요소의 레이아웃 계산을 건너뛸 수 있음
+- **콘텐츠가 동적으로 자주 바뀌는 영역** — 변경마다 전체 페이지가 아닌 해당 영역만 재계산
+
+단순한 페이지에서는 체감 차이가 거의 없다. 요소가 많고 DOM 변경이 빈번한 페이지에서 의미 있는 최적화가 된다.
+
+## React와 렌더링 최적화 관점에서 비교해보기
+
+React의 렌더링 최적화(`memo`, `useMemo` 등)와 `contain`은 **최적화하는 계층이 다르다.**
+
+```
+React re-render → Virtual DOM diff → 실제 DOM 업데이트 → 브라우저 Layout/Paint
+      ↑                                                        ↑
+  memo 등으로 최적화                                    contain으로 최적화
+```
+
+React는 JS 레벨에서 불필요한 re-render를 줄이고, `contain`은 브라우저 레벨에서 layout·paint 계산 범위를 줄인다. 둘 다 "변경의 영향 범위를 최소화한다"는 같은 철학이지만 작동하는 계층이 다르기 때문에 함께 쓰면 상호 보완이 된다.
+
+### 예시: 스프레드시트
+
+1,000개의 row가 있는 시트에서 하나의 셀을 편집하는 상황을 단계별로 살펴본다.
+
+#### 최적화 없음
+
+```tsx
+function Sheet({ rows }) {
+  return (
+    <div className="sheet">
+      {rows.map((row) => (
+        <Row key={row.id} data={row} />
+      ))}
+    </div>
+  );
+}
+
+function Row({ data }) {
+  return (
+    <div className="row">
+      {data.cells.map((cell) => (
+        <div className="cell" key={cell.id}>{cell.value}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+셀 하나를 편집하면 1,000개 Row가 전부 re-render되고, 브라우저도 1,000개 row 전체의 layout을 재계산한다.
+
+#### React 최적화 적용 (memo)
+
+```tsx
+const Row = memo(function Row({ data }) {
+  return (
+    <div className="row">
+      {data.cells.map((cell) => (
+        <div className="cell" key={cell.id}>{cell.value}</div>
+      ))}
+    </div>
+  );
+});
+```
+
+`memo`로 감싸면 props가 바뀐 1개 Row만 re-render된다. 하지만 브라우저는 여전히 "이 row의 높이가 바뀌었을 수도 있으니 아래 999개 row 위치를 다시 계산해야 하나?"하고 전체를 확인한다.
+
+#### React + contain 동시 적용
+
+```tsx
+const Row = memo(function Row({ data, onChange }) {
+  return (
+    <div className="row">
+      {data.cells.map((cell) => (
+        <Cell key={cell.id} cell={cell} onChange={onChange} />
+      ))}
+    </div>
+  );
+});
+
+const Cell = memo(function Cell({ cell, onChange }) {
+  return (
+    <input
+      className="cell"
+      value={cell.value}
+      onChange={(e) => onChange(cell.id, e.target.value)}
+    />
+  );
+});
+
+// css
+.row {
+  contain: content;
+  display: flex;
+}
+
+.cell {
+  width: 120px;
+  height: 32px;
+  box-sizing: border-box;
+}
+```
+
+
+`contain: content`를 추가하면 브라우저에게 "각 row 내부의 변화는 다른 row에 영향을 주지 않는다"고 알려주므로, 변경된 1개 row만 layout·paint를 재계산한다.
+
+#### 비교 정리
+
+| | 최적화 없음 | memo만 | memo + contain |
+| --- | --- | --- | --- |
+| React re-render | 1,000회 | **1회** | **1회** |
+| Virtual DOM diff | 1,000회 | **1회** | **1회** |
+| 브라우저 layout 계산 | 1,000 | 1,000 | **1** |
